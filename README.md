@@ -1,177 +1,350 @@
-# EasyOCR
+# EASYOCR Trainer
 
-[![PyPI Status](https://badge.fury.io/py/easyocr.svg)](https://badge.fury.io/py/easyocr)
-[![license](https://img.shields.io/badge/License-Apache%202.0-blue.svg)](https://github.com/JaidedAI/EasyOCR/blob/master/LICENSE)
-[![Tweet](https://img.shields.io/twitter/url/https/github.com/JaidedAI/EasyOCR.svg?style=social)](https://twitter.com/intent/tweet?text=Check%20out%20this%20awesome%20library:%20EasyOCR%20https://github.com/JaidedAI/EasyOCR)
-[![Twitter](https://img.shields.io/badge/twitter-@JaidedAI-blue.svg?style=flat)](https://twitter.com/JaidedAI)
+EasyOCR training engine cloned from: git clone https://github.com/JaidedAI/EasyOCR.git
 
-Ready-to-use OCR with 80+ [supported languages](https://www.jaided.ai/easyocr) and all popular writing scripts including: Latin, Chinese, Arabic, Devanagari, Cyrillic, etc.
+[Instructions](EasyOCR/custom_model.md)
 
-[Try Demo on our website](https://www.jaided.ai/easyocr)
+Dataset:
 
-Integrated into [Huggingface Spaces 🤗](https://huggingface.co/spaces) using [Gradio](https://github.com/gradio-app/gradio). Try out the Web Demo: [![Hugging Face Spaces](https://img.shields.io/badge/%F0%9F%A4%97%20Hugging%20Face-Spaces-blue)](https://huggingface.co/spaces/tomofi/EasyOCR)
+[Training Data](EasyOCR/trainer/all_data/train_labels.txt)
 
+[Test Data](EasyOCR/trainer/all_data/test_labels.txt)
 
-## What's new
-- 24 September 2024 - Version 1.7.2
-    - Fix several compatibilities
+COMMAND: python train.py --train_data all_data/en --valid_data all_data/en --character "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz -" --batch_size 2 --num_iter 300 --valInterval 100 --workers 0 --sensitive --lr 0.0001 --optim adam --decode greedy
 
-- [Read all release notes](https://github.com/JaidedAI/EasyOCR/blob/master/releasenotes.md)
+### TESTING RESULTS:
 
-## What's coming next
-- Handwritten text support
+super().**init**(
 
-## Examples
+iter 0 | loss 45.1389
 
-![example](examples/example.png)
+iter 10 | loss 4.4470
 
-![example2](examples/example2.png)
+iter 20 | loss 4.3817
 
-![example3](examples/example3.png)
+iter 30 | loss 3.6736
 
+iter 40 | loss 3.8403
 
-## Installation
+iter 50 | loss 3.7888
 
-Install using `pip`
+iter 60 | loss 4.8160
 
-For the latest stable release:
+iter 70 | loss 3.3449
 
-``` bash
-pip install easyocr
-```
+iter 80 | loss 3.5571
 
-For the latest development release:
+iter 90 | loss 3.6867
 
-``` bash
-pip install git+https://github.com/JaidedAI/EasyOCR.git
-```
+iter 100 | loss 2.9576
 
-Note 1: For Windows, please install torch and torchvision first by following the official instructions here https://pytorch.org. On the pytorch website, be sure to select the right CUDA version you have. If you intend to run on CPU mode only, select `CUDA = None`.
+training time: 297.15257382392883
 
-Note 2: We also provide a Dockerfile [here](https://github.com/JaidedAI/EasyOCR/blob/master/Dockerfile).
+[100/300] Train loss: 5.25205, Valid loss: 3.71828, Elapsed_time: 297.15462
 
-## Usage
+---
 
-``` python
-import easyocr
-reader = easyocr.Reader(['ch_sim','en']) # this needs to run only once to load the model into memory
-result = reader.readtext('chinese.jpg')
-```
+## Ground Truth | Prediction | Confidence Score & T/F
 
-The output will be in a list format, each item represents a bounding box, the text detected and confident level, respectively.
+Soriano | | 0.0065 False
 
-``` bash
-[([[189, 75], [469, 75], [469, 165], [189, 165]], '愚园路', 0.3754989504814148),
- ([[86, 80], [134, 80], [134, 128], [86, 128]], '西', 0.40452659130096436),
- ([[517, 81], [565, 81], [565, 123], [517, 123]], '东', 0.9989598989486694),
- ([[78, 126], [136, 126], [136, 156], [78, 156]], '315', 0.8125889301300049),
- ([[514, 126], [574, 126], [574, 156], [514, 156]], '309', 0.4971577227115631),
- ([[226, 170], [414, 170], [414, 220], [226, 220]], 'Yuyuan Rd.', 0.8261902332305908),
- ([[79, 173], [125, 173], [125, 213], [79, 213]], 'W', 0.9848111271858215),
- ([[529, 173], [569, 173], [569, 213], [529, 213]], 'E', 0.8405593633651733)]
-```
-Note 1: `['ch_sim','en']` is the list of languages you want to read. You can pass
-several languages at once but not all languages can be used together.
-English is compatible with every language and languages that share common characters are usually compatible with each other.
+VALENTINE | | 0.0117 False
 
-Note 2: Instead of the filepath `chinese.jpg`, you can also pass an OpenCV image object (numpy array) or an image file as bytes. A URL to a raw image is also acceptable.
+---
 
-Note 3: The line `reader = easyocr.Reader(['ch_sim','en'])` is for loading a model into memory. It takes some time but it needs to be run only once.
+validation time: 56.13448619842529
 
-You can also set `detail=0` for simpler output.
+iter 110 | loss 3.5413
 
-``` python
-reader.readtext('chinese.jpg', detail = 0)
-```
-Result:
-``` bash
-['愚园路', '西', '东', '315', '309', 'Yuyuan Rd.', 'W', 'E']
-```
+iter 120 | loss 3.1034
 
-Model weights for the chosen language will be automatically downloaded or you can
-download them manually from the [model hub](https://www.jaided.ai/easyocr/modelhub) and put them in the '~/.EasyOCR/model' folder
+iter 130 | loss 5.2702
 
-In case you do not have a GPU, or your GPU has low memory, you can run the model in CPU-only mode by adding `gpu=False`.
+iter 140 | loss 3.6067
 
-``` python
-reader = easyocr.Reader(['ch_sim','en'], gpu=False)
-```
+iter 150 | loss 4.1676
 
-For more information, read the [tutorial](https://www.jaided.ai/easyocr/tutorial) and [API Documentation](https://www.jaided.ai/easyocr/documentation).
+iter 160 | loss 3.2368
 
-#### Run on command line
+iter 170 | loss 3.3455
 
-```shell
-$ easyocr -l ch_sim en -f chinese.jpg --detail=1 --gpu=True
-```
+iter 180 | loss 3.3167
 
-## Train/use your own model
+iter 190 | loss 3.7145
 
-For recognition model, [Read here](https://github.com/JaidedAI/EasyOCR/blob/master/custom_model.md).
+iter 200 | loss 3.2686
 
-For detection model (CRAFT), [Read here](https://github.com/JaidedAI/EasyOCR/blob/master/trainer/craft/README.md).
+training time: 290.53788137435913
 
-## Implementation Roadmap
+[200/300] Train loss: 3.67731, Valid loss: 3.46258, Elapsed_time: 643.82713
 
-- Handwritten support
-- Restructure code to support swappable detection and recognition algorithms
-The api should be as easy as
-``` python
-reader = easyocr.Reader(['en'], detection='DB', recognition = 'Transformer')
-```
-The idea is to be able to plug in any state-of-the-art model into EasyOCR. There are a lot of geniuses trying to make better detection/recognition models, but we are not trying to be geniuses here. We just want to make their works quickly accessible to the public ... for free. (well, we believe most geniuses want their work to create a positive impact as fast/big as possible) The pipeline should be something like the below diagram. Grey slots are placeholders for changeable light blue modules.
+---
 
-![plan](examples/easyocr_framework.jpeg)
+## Ground Truth | Prediction | Confidence Score & T/F
 
-## Acknowledgement and References
+GUILLOT GOGUET | | 0.0064 False
 
-This project is based on research and code from several papers and open-source repositories.
+JEAN COME | | 0.0063 False
 
-All deep learning execution is based on [Pytorch](https://pytorch.org). :heart:
+---
 
-Detection execution uses the CRAFT algorithm from this [official repository](https://github.com/clovaai/CRAFT-pytorch) and their [paper](https://arxiv.org/abs/1904.01941) (Thanks @YoungminBaek from [@clovaai](https://github.com/clovaai)). We also use their pretrained model. Training script is provided by [@gmuffiness](https://github.com/gmuffiness).
+validation time: 54.00260043144226
 
-The recognition model is a CRNN ([paper](https://arxiv.org/abs/1507.05717)). It is composed of 3 main components: feature extraction (we are currently using [Resnet](https://arxiv.org/abs/1512.03385)) and VGG, sequence labeling ([LSTM](https://www.bioinf.jku.at/publications/older/2604.pdf)) and decoding ([CTC](https://www.cs.toronto.edu/~graves/icml_2006.pdf)). The training pipeline for recognition execution is a modified version of the [deep-text-recognition-benchmark](https://github.com/clovaai/deep-text-recognition-benchmark) framework. (Thanks [@ku21fan](https://github.com/ku21fan) from [@clovaai](https://github.com/clovaai)) This repository is a gem that deserves more recognition.
+iter 210 | loss 3.1327
 
-Beam search code is based on this [repository](https://github.com/githubharald/CTCDecoder) and his [blog](https://towardsdatascience.com/beam-search-decoding-in-ctc-trained-neural-networks-5a889a3d85a7). (Thanks [@githubharald](https://github.com/githubharald))
+iter 220 | loss 3.8782
 
-Data synthesis is based on [TextRecognitionDataGenerator](https://github.com/Belval/TextRecognitionDataGenerator). (Thanks [@Belval](https://github.com/Belval))
+iter 230 | loss 3.3630
 
-And a good read about CTC from distill.pub [here](https://distill.pub/2017/ctc/).
+iter 240 | loss 3.4545
 
-## Want To Contribute?
+iter 250 | loss 3.1189
 
-Let's advance humanity together by making AI available to everyone!
+iter 260 | loss 3.2864
 
-3 ways to contribute:
+iter 270 | loss 3.8032
 
-**Coder:** Please send a PR for small bugs/improvements. For bigger ones, discuss with us by opening an issue first. There is a list of possible bug/improvement issues tagged with ['PR WELCOME'](https://github.com/JaidedAI/EasyOCR/issues?q=is%3Aissue+is%3Aopen+label%3A%22PR+WELCOME%22).
+iter 280 | loss 3.5028
 
-**User:** Tell us how EasyOCR benefits you/your organization to encourage further development. Also post failure cases in [Issue  Section](https://github.com/JaidedAI/EasyOCR/issues) to help improve future models.
+iter 290 | loss 3.0270
 
-**Tech leader/Guru:** If you found this library useful, please spread the word! (See [Yann Lecun's post](https://www.facebook.com/yann.lecun/posts/10157018122787143) about EasyOCR)
+iter 300 | loss 2.9997
 
-## Guideline for new language request
+training time: 251.15985083580017
 
-To request a new language, we need you to send a PR with the 2 following files:
+[300/300] Train loss: 3.48534, Valid loss: 3.45151, Elapsed_time: 948.98977
 
-1. In folder [easyocr/character](https://github.com/JaidedAI/EasyOCR/tree/master/easyocr/character),
-we need 'yourlanguagecode_char.txt' that contains list of all characters. Please see format examples from other files in that folder.
-2. In folder [easyocr/dict](https://github.com/JaidedAI/EasyOCR/tree/master/easyocr/dict),
-we need 'yourlanguagecode.txt' that contains list of words in your language.
-On average, we have ~30000 words per language with more than 50000 words for more popular ones.
-More is better in this file.
+---
 
-If your language has unique elements (such as 1. Arabic: characters change form when attached to each other + write from right to left 2. Thai: Some characters need to be above the line and some below), please educate us to the best of your ability and/or give useful links. It is important to take care of the detail to achieve a system that really works.
+## Ground Truth | Prediction | Confidence Score & T/F
 
-Lastly, please understand that our priority will have to go to popular languages or sets of languages that share large portions of their characters with each other (also tell us if this is the case for your language). It takes us at least a week to develop a new model, so you may have to wait a while for the new model to be released.
+ELBAKKALI | MA | 0.0001 False
 
-See [List of languages in development](https://github.com/JaidedAI/EasyOCR/issues/91)
+CLAIRE | MA | 0.0001 False
 
-## Github Issues
+---
 
-Due to limited resources, an issue older than 6 months will be automatically closed. Please open an issue again if it is critical.
+validation time: 65.48364853858948
 
-## Business Inquiries
+### TESTING RESULTS 2:
 
-For Enterprise Support, [Jaided AI](https://www.jaided.ai/) offers full service for custom OCR/AI systems from implementation, training/finetuning and deployment. Click [here](https://www.jaided.ai/contactus?ref=github) to contact us.
+super().**init**(
+iter 0 | loss 48.6029
+
+iter 10 | loss 4.5543
+
+iter 20 | loss 4.7243
+
+iter 30 | loss 4.0003
+
+iter 40 | loss 4.5361
+
+iter 50 | loss 3.5435
+
+iter 60 | loss 5.2376
+
+iter 70 | loss 3.5753
+
+iter 80 | loss 4.1038
+
+iter 90 | loss 4.2777
+
+iter 100 | loss 3.5527
+
+training time: 194.40260910987854
+
+[100/600] Train loss: 4.62161, Valid loss: 3.69194,
+
+---
+
+## Ground Truth | Prediction | Confidence Score & T/F
+
+GUILLOT GOGUET | | 0.0009 False
+
+PAULINE | | 0.0028 False
+
+---
+
+validation time: 49.05067753791809
+
+iter 110 | loss 5.2451
+
+iter 120 | loss 4.1599
+
+iter 130 | loss 4.2573
+
+iter 140 | loss 3.7255
+
+iter 150 | loss 3.4096
+
+iter 160 | loss 3.4484
+
+iter 170 | loss 3.3179
+
+iter 180 | loss 3.5312
+
+iter 190 | loss 3.6094
+
+iter 200 | loss 3.2921
+
+training time: 270.2250759601593
+
+[200/600] Train loss: 3.65330, Valid loss: 3.32930, Elapsed_time: 513.68147
+
+---
+
+## Ground Truth | Prediction | Confidence Score & T/F
+
+JEAN COME | | 0.0000 False
+
+FRANSOISSISEPH | | 0.0000 False
+
+---
+
+validation time: 74.76693844795227
+
+iter 210 | loss 4.6947
+
+iter 220 | loss 3.5391
+
+iter 230 | loss 3.7458
+
+iter 240 | loss 3.4104
+
+iter 250 | loss 3.2844
+
+iter 260 | loss 3.4547
+
+iter 270 | loss 3.0345
+
+iter 280 | loss 4.9156
+
+iter 290 | loss 3.4436
+
+iter 300 | loss 3.4493
+
+training time: 270.3188474178314
+
+[300/600] Train loss: 3.53309, Valid loss: 3.22446, Elapsed_time: 858.76740
+
+---
+
+## Ground Truth | Prediction | Confidence Score & T/F
+
+PAUL | L | 0.0013 False
+
+Catherine | A | 0.0015 False
+
+---
+
+validation time: 60.673492431640625
+
+iter 310 | loss 3.5023
+
+iter 320 | loss 3.0998
+
+iter 330 | loss 3.0922
+
+iter 340 | loss 3.0576
+
+iter 350 | loss 3.1524
+
+iter 360 | loss 6.3221
+
+iter 370 | loss 3.4671
+
+iter 380 | loss 3.0475
+
+iter 390 | loss 3.5319
+
+iter 400 | loss 2.8710
+
+training time: 289.7448694705963
+
+[400/600] Train loss: 3.39331, Valid loss: 4.98558,
+
+---
+
+## Ground Truth | Prediction | Confidence Score & T/F
+
+RELIS | M | 0.0004 False
+
+JADE | M | 0.0000 False
+
+---
+
+validation time: 54.69872522354126
+
+iter 410 | loss 3.4234
+
+iter 420 | loss 3.1857
+
+iter 430 | loss 3.4812
+
+iter 440 | loss 3.2964
+
+iter 450 | loss 3.5359
+
+iter 460 | loss 3.1243
+
+iter 470 | loss 2.7428
+
+iter 480 | loss 3.2248
+
+iter 490 | loss 3.1902
+
+iter 500 | loss 3.6683
+
+training time: 259.12396025657654
+
+[500/600] Train loss: 3.39295, Valid loss: 3.27525,
+
+---
+
+## Ground Truth | Prediction | Confidence Score & T/F
+
+RAPHAEL | B | 0.0003 False
+
+BOURQUIN | | 0.0012 False
+
+---
+
+validation time: 53.25653696060181
+
+iter 510 | loss 2.8886
+
+iter 520 | loss 3.2058
+
+iter 530 | loss 3.3698
+
+iter 540 | loss 3.2743
+
+iter 550 | loss 3.3068
+
+iter 560 | loss 2.7712
+
+iter 570 | loss 3.5144
+
+iter 580 | loss 3.6514
+
+iter 590 | loss 3.2486
+
+iter 600 | loss 3.2205
+
+training time: 242.94145488739014
+
+[600/600] Train loss: 3.34676, Valid loss: 3.22076,
+
+---
+
+## Ground Truth | Prediction | Confidence Score & T/F
+
+LILOU | D | 0.0002 False
+
+ANNE | D | 0.0002 False
+
+---
+
+validation time: 56.336950063705444
+
+end the training

@@ -10,7 +10,8 @@ from natsort import natsorted
 from PIL import Image
 import numpy as np
 from torch.utils.data import Dataset, ConcatDataset, Subset
-from torch._utils import _accumulate
+#from torch._utils import _accumulate
+from itertools import accumulate as _accumulate
 import torchvision.transforms as transforms
 
 def contrast_grey(img):
@@ -98,12 +99,12 @@ class Batch_Balanced_Dataset(object):
 
         for i, data_loader_iter in enumerate(self.dataloader_iter_list):
             try:
-                image, text = data_loader_iter.next()
+                image, text = next(data_loader_iter)
                 balanced_batch_images.append(image)
                 balanced_batch_texts += text
             except StopIteration:
                 self.dataloader_iter_list[i] = iter(self.data_loader_list[i])
-                image, text = self.dataloader_iter_list[i].next()
+                image, text = next(self.dataloader_iter_list[i])
                 balanced_batch_images.append(image)
                 balanced_batch_texts += text
             except ValueError:
@@ -146,7 +147,12 @@ class OCRDataset(Dataset):
         self.root = root
         self.opt = opt
         print(root)
-        self.df = pd.read_csv(os.path.join(root,'labels.csv'), sep='^([^,]+),', engine='python', usecols=['filename', 'words'], keep_default_na=False)
+        #self.df = pd.read_csv(os.path.join(root,'labels.csv'), sep='^([^,]+),', engine='python', usecols=['filename', 'words'], keep_default_na=False)
+        self.df = pd.read_csv(
+        os.path.join(root, 'labels.csv'),
+        usecols=['filename', 'words'],
+        keep_default_na=False
+        )
         self.nSamples = len(self.df)
 
         if self.opt.data_filtering_off:
@@ -161,7 +167,7 @@ class OCRDataset(Dataset):
                 except:
                     print(label)
                 out_of_char = f'[^{self.opt.character}]'
-                if re.search(out_of_char, label.lower()):
+                if re.search(out_of_char, label):
                     continue
                 self.filtered_index_list.append(index)
             self.nSamples = len(self.filtered_index_list)

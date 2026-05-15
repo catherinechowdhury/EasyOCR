@@ -1,20 +1,37 @@
+print("START")
 import os
+print("1")
 import sys
+print("2")
 import time
+print("3")
 import random
+print("4")
 import torch
+print("5")
 import torch.backends.cudnn as cudnn
+print("6")
 import torch.nn as nn
+print("7")
 import torch.nn.init as init
+print("8")
 import torch.optim as optim
+print("9")
 import torch.utils.data
+print("10")
 from torch.cuda.amp import autocast, GradScaler
+print("11")
 import numpy as np
+print("12")
 
 from utils import CTCLabelConverter, AttnLabelConverter, Averager
-from dataset import hierarchical_dataset, AlignCollate, Batch_Balanced_Dataset
+print("13")
+from dataset import hierarchical_dataset, AlignCollate,Batch_Balanced_Dataset
+print("14")
 from model import Model
+print("15")
 from test import validation
+print("16")
 device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
 
 def count_parameters(model):
@@ -37,16 +54,26 @@ def train(opt, show_number = 2, amp=False):
 
     opt.select_data = opt.select_data.split('-')
     opt.batch_ratio = opt.batch_ratio.split('-')
+    #Create automatically saved_models folder if not exist
+    os.makedirs(f'./saved_models/{opt.experiment_name}', exist_ok=True)
     train_dataset = Batch_Balanced_Dataset(opt)
 
     log = open(f'./saved_models/{opt.experiment_name}/log_dataset.txt', 'a', encoding="utf8")
     AlignCollate_valid = AlignCollate(imgH=opt.imgH, imgW=opt.imgW, keep_ratio_with_pad=opt.PAD, contrast_adjust=opt.contrast_adjust)
     valid_dataset, valid_dataset_log = hierarchical_dataset(root=opt.valid_data, opt=opt)
+    #valid_loader = torch.utils.data.DataLoader(
+    #    valid_dataset, batch_size=min(32, opt.batch_size),
+    #    shuffle=True,  # 'True' to check training progress with validation function.
+    #    num_workers=int(opt.workers), prefetch_factor=512,
+    #    collate_fn=AlignCollate_valid, pin_memory=True)
     valid_loader = torch.utils.data.DataLoader(
         valid_dataset, batch_size=min(32, opt.batch_size),
-        shuffle=True,  # 'True' to check training progress with validation function.
-        num_workers=int(opt.workers), prefetch_factor=512,
-        collate_fn=AlignCollate_valid, pin_memory=True)
+        shuffle=True,
+        num_workers=int(opt.workers),
+        prefetch_factor=512 if int(opt.workers) > 0 else None,
+        collate_fn=AlignCollate_valid,
+        pin_memory=True
+    )
     log.write(valid_dataset_log)
     print('-' * 80)
     log.write('-' * 80 + '\n')
@@ -219,7 +246,11 @@ def train(opt, show_number = 2, amp=False):
             torch.nn.utils.clip_grad_norm_(model.parameters(), opt.grad_clip) 
             optimizer.step()
         loss_avg.add(cost)
-
+        
+        # Print training loss and validation result (on valid dataset) per 10 iterations.
+        if i % 10 == 0:
+            print(f"iter {i} | loss {cost.item():.4f}")
+            
         # validation part
         if (i % opt.valInterval == 0) and (i!=0):
             print('training time: ', time.time()-t1)
@@ -259,7 +290,11 @@ def train(opt, show_number = 2, amp=False):
                 
                 #show_number = min(show_number, len(labels))
                 
-                start = random.randint(0,len(labels) - show_number )    
+                #start = random.randint(0,len(labels) - show_number )
+                # Safer Validation Result Display
+                show_number = min(show_number, len(labels))
+                start = random.randint(0, max(0, len(labels) - show_number))
+                    
                 for gt, pred, confidence in zip(labels[start:start+show_number], preds[start:start+show_number], confidence_score[start:start+show_number]):
                     if 'Attn' in opt.Prediction:
                         gt = gt[:gt.find('[s]')]
@@ -280,3 +315,80 @@ def train(opt, show_number = 2, amp=False):
             print('end the training')
             sys.exit()
         i += 1
+
+# Main Method
+if __name__ == '__main__':
+    import argparse
+
+    parser = argparse.ArgumentParser()
+
+    # dataset paths
+    parser.add_argument('--train_data', required=True)
+    parser.add_argument('--valid_data', required=True)
+
+    # dataset selection
+    parser.add_argument('--select_data', type=str, default='en')
+    parser.add_argument('--batch_ratio', type=str, default='1')
+    parser.add_argument('--total_data_usage_ratio', type=str, default='1.0')
+    parser.add_argument('--sensitive', action='store_true')
+
+    # model architecture
+    parser.add_argument('--Transformation', type=str, default='None')
+    parser.add_argument('--FeatureExtraction', type=str, default='ResNet')
+    parser.add_argument('--SequenceModeling', type=str, default='BiLSTM')
+    parser.add_argument('--Prediction', type=str, default='CTC')
+    parser.add_argument('--decode', type=str, default='greedy')
+
+    # training settings
+    parser.add_argument('--batch_size', type=int, default=2)
+    parser.add_argument('--num_iter', type=int, default=200)
+    parser.add_argument('--valInterval', type=int, default=20)
+    parser.add_argument('--workers', type=int, default=0)
+
+    # image settings
+    parser.add_argument('--imgH', type=int, default=64)
+    parser.add_argument('--imgW', type=int, default=300)
+    parser.add_argument('--batch_max_length', type=int, default=25)
+
+    # character set
+    parser.add_argument('--character', type=str, required=True)
+
+    # experiment name
+    parser.add_argument('--experiment_name', type=str, default='debug_run')
+
+    # misc options
+    parser.add_argument('--PAD', action='store_true')
+    parser.add_argument('--rgb', action='store_true')
+
+    parser.add_argument('--contrast_adjust', type=float, default=0.0)
+
+    # model dimensions
+    parser.add_argument('--hidden_size', type=int, default=256)
+    parser.add_argument('--output_channel', type=int, default=512)
+    parser.add_argument('--input_channel', type=int, default=1)
+    parser.add_argument('--num_fiducial', type=int, default=20)
+
+    # optimizer settings
+    parser.add_argument('--lr', type=float, default=1.0)
+    parser.add_argument('--rho', type=float, default=0.95)
+    parser.add_argument('--eps', type=float, default=1e-8)
+    parser.add_argument('--grad_clip', type=float, default=5)
+
+    parser.add_argument('--saved_model', type=str, default='')
+
+    parser.add_argument('--FT', action='store_true')
+    parser.add_argument('--new_prediction', action='store_true')
+
+    parser.add_argument('--freeze_FeatureFxtraction', action='store_true')
+    parser.add_argument('--freeze_SequenceModeling', action='store_true')
+
+    parser.add_argument('--data_filtering_off', action='store_true')
+
+    parser.add_argument('--optim', type=str, default='adam')
+
+    opt = parser.parse_args()
+
+    print("MAIN METHOD RUNNING")
+    print(opt)
+
+    train(opt)
