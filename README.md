@@ -4,11 +4,23 @@ EasyOCR training engine cloned from: git clone https://github.com/JaidedAI/EasyO
 
 [Trainer File](trainer/train.py)
 
+[Dataset File](trainer/dataset.py)
+
+[Dependencies](requirements.txt)
+
 Dataset:
 
-[Training Data](EasyOCR/trainer/all_data/train_labels.txt)
+NOTE: Dataset folders were too large to upload directly. The Datasets would have been in the following folder structure
 
-[Test Data](EasyOCR/trainer/all_data/test_labels.txt)
+trainer/all_data/en/test
+
+trainer/all_data/en/train
+
+Text files to view data used:
+
+[Training Data](trainer/all_data/train_labels.txt)
+
+[Test Data](trainer/all_data/test_labels.txt)
 
 COMMAND: python train.py --train_data all_data/en --valid_data all_data/en --character "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz -" --batch_size 2 --num_iter 300 --valInterval 100 --workers 0 --sensitive --lr 0.0001 --optim adam --decode greedy
 
