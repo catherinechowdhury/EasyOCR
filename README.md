@@ -2,7 +2,7 @@
 
 EasyOCR training engine cloned from: git clone https://github.com/JaidedAI/EasyOCR.git
 
-[Instructions](EasyOCR/custom_model.md)
+[Trainer File](trainer/train.py)
 
 Dataset:
 
